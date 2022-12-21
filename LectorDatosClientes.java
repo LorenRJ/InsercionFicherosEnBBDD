@@ -27,33 +27,66 @@ public class LectorDatosClientes {
 		nombreFichero = "C:\\Users\\jirol\\eclipse-workspace\\PracticaFicheros2\\src\\Fichero.txt";
 		separadorCampos = ";";
 		nombreTabla = "empleados";
-		/**
-		 * if(nombreFichero.equals("")|| nombreFichero.equals(null)) {
-			JOptionPane.showMessageDialog(null, "No ha introducido el fichero");
-		}
-		crearFichero(nombreFichero);
-		 */
-		//System.out.println(fichero1.exists());
 	try {
 		try (BufferedReader br = new BufferedReader(new FileReader(nombreFichero))) {
 			String cadena;
-			int contador = 0;
-			conexion.Conectar();
 			while ((cadena = br.readLine()) != null) {
-				contador++;
 				split = cadena.split(separadorCampos);
 				for(int i = 0; i < split.length; i++) {
+					if(split.length == 1) {
+						splitear.add(null);
+					}
 					System.out.println("Split method"+split[i]);
 					splitear.add(split[i]);
 				}
 			}
-			for(int i = 0; i < splitear.size();i++) {
-				//System.out.println("Esto es el split de la gente "+splitear.get(i));
-			}
-			
-			
 		try{
-			int a = 0; 
+			
+			//Desde aqui
+			conexion.Conectar();
+			PreparedStatement statement;
+			String consulta = "INSERT INTO EMPLEADOS(DNI,NOMBRE) VALUES(?,?)";
+			statement = conexion.getConexion().prepareStatement(consulta);
+			conexion.getConexion().setAutoCommit(false);
+			String [][] matriz1 = new String[splitear.size()][2];
+			int contador1 = -1;
+			int indice = 0;
+			for(int x = 0; x < matriz1.length; x++) {
+				for(int y = 0; y < matriz1[x].length; y++) {
+					//System.out.println(matriz1[x].length);
+					contador1++;
+					matriz1[x][y] = splitear.get(indice);
+					System.out.println("Lo que introduces"+matriz1[x][y]+"Indice"+indice);
+					indice = (indice + 1) % splitear.size();
+					statement.setString(y+1, matriz1[x][y]);
+					//System.out.println("Matriz de la posicion "+matriz1[x][y]+"Indice: "+(y+1));
+				}
+				statement.addBatch();
+			}
+			statement.executeBatch();
+			conexion.getConexion().commit();
+			conexion.desconectar();
+			br.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println(e);
+			try {
+				conexion.getConexion().rollback();
+				
+			} catch (Exception er) {
+				System.out.println(er);
+				// TODO: handle exception
+			}
+		}
+			// Hasta aqui
+	}
+	} catch (IOException e) {
+		e.printStackTrace();
+	}
+	}
+	//Ejercicio realizado
+	/**
+	 * 		int a = 0; 
 			int b =1;
 			PreparedStatement statement;
 			for(int i = 0; i < contador; i++) {
@@ -68,15 +101,10 @@ public class LectorDatosClientes {
 			br.close();
 			System.out.println("cierre de fichero");
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-	} catch (IOException e) {
-		//TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-	}
+	 * @param nombreFichero
+	 */
 	private void crearFichero(String nombreFichero) {
 		fichero1 = new File("C:\\Users\\jirol\\eclipse-workspace", nombreFichero + ".txt");
 		try {
@@ -88,6 +116,7 @@ public class LectorDatosClientes {
 			ioe.printStackTrace();
 		}
 	}
+	
 	/**
 	 * int contador1 = -1;
 			String [][] matriz1 = new String[splitear.size()][2];
